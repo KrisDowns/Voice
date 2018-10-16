@@ -7,13 +7,13 @@ import com.f2prateek.rx.preferences2.Preference
 import com.f2prateek.rx.preferences2.RxSharedPreferences
 import dagger.Module
 import dagger.Provides
+import de.ph1b.audiobook.features.bookOverview.list.BookComparator
 import de.ph1b.audiobook.persistence.pref.PersistentPref
 import de.ph1b.audiobook.persistence.pref.Pref
 import de.ph1b.audiobook.uitools.ThemeUtil
 import java.util.UUID
 import javax.inject.Named
 import javax.inject.Singleton
-
 
 @Module
 class PrefsModule {
@@ -119,6 +119,17 @@ class PrefsModule {
   @Named(PrefKeys.RESUME_AFTER_CALL)
   fun provideResumeAfterCallPreference(prefs: RxSharedPreferences): Pref<Boolean> {
     val pref = prefs.getBoolean(PrefKeys.RESUME_AFTER_CALL, false)
+    return PersistentPref(pref)
+  }
+
+  @Provides
+  @Singleton
+  @Named(PrefKeys.SORTING_MODE)
+  fun provideSortingMode(prefs: RxSharedPreferences): Pref<BookComparator> {
+    val pref = prefs.getEnum(
+      PrefKeys.SORTING_MODE, BookComparator.BY_NAME,
+      BookComparator::class.java
+    )
     return PersistentPref(pref)
   }
 }

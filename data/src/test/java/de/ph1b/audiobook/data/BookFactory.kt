@@ -1,13 +1,8 @@
-package de.ph1b.audiobook
+package de.ph1b.audiobook.data
 
-import de.ph1b.audiobook.data.Book
-import de.ph1b.audiobook.data.BookContent
-import de.ph1b.audiobook.data.BookMetaData
-import de.ph1b.audiobook.data.BookSettings
-import de.ph1b.audiobook.data.Chapter
 import java.util.UUID
 
-object BookFactory {
+internal object BookFactory {
 
   fun create(
     id: UUID = UUID.randomUUID(),
@@ -19,7 +14,9 @@ object BookFactory {
     playbackSpeed: Float = 1F,
     loudnessGain: Int = 500,
     skipSilence: Boolean = false,
-    chapters: List<Chapter> = listOf(ChapterFactory.create(bookId = id))
+    chapters: List<Chapter> = listOf(ChapterFactory.create(bookId = id)),
+    lastPlayedAtMillis: Long = 0L,
+    addedAtMillis: Long = 0L
   ): Book {
 
     val currentFile = chapters[currentFileIndex].file
@@ -32,7 +29,8 @@ object BookFactory {
         type = type,
         author = author,
         name = name,
-        root = root
+        root = root,
+        addedAtMillis = addedAtMillis
       ),
       content = BookContent(
         id = id,
@@ -44,7 +42,7 @@ object BookFactory {
           loudnessGain = loudnessGain,
           skipSilence = skipSilence,
           active = true,
-          lastPlayedAtMillis = 0
+          lastPlayedAtMillis = lastPlayedAtMillis
         ),
         chapters = chapters
       )

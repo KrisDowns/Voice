@@ -1,6 +1,5 @@
 package de.ph1b.audiobook.misc.recyclerComponent
 
-
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -11,7 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
  *
  * Instead of handling the view type and items manually, add a [AdapterComponent] for each view type.
  */
-open class CompositeListAdapter<T : Any>(itemCallback: DiffUtil.ItemCallback<T> = EqualityItemCallback()) :
+open class CompositeListAdapter<T : Any>(
+  itemCallback: DiffUtil.ItemCallback<T> = EqualityItemCallback()
+) :
   ListAdapter<T, RecyclerView.ViewHolder>(itemCallback) {
 
   private val helper = CompositeAdapterHelper { getItem(it) }

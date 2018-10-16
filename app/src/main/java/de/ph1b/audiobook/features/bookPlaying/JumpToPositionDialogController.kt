@@ -3,12 +3,12 @@ package de.ph1b.audiobook.features.bookPlaying
 import android.app.Dialog
 import android.os.Bundle
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
 import com.afollestad.materialdialogs.MaterialDialog
 import de.ph1b.audiobook.R
 import de.ph1b.audiobook.data.repo.BookRepository
 import de.ph1b.audiobook.injection.App
 import de.ph1b.audiobook.injection.PrefKeys
+import de.ph1b.audiobook.misc.DialogController
 import de.ph1b.audiobook.misc.DialogLayoutContainer
 import de.ph1b.audiobook.misc.inflate
 import de.ph1b.audiobook.persistence.pref.Pref
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
 
-class JumpToPositionDialogFragment : DialogFragment() {
+class JumpToPositionDialogController : DialogController() {
 
   @field:[Inject Named(PrefKeys.CURRENT_BOOK)]
   lateinit var currentBookIdPref: Pref<UUID>
@@ -28,7 +28,7 @@ class JumpToPositionDialogFragment : DialogFragment() {
   @Inject
   lateinit var playerController: PlayerController
 
-  override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+  override fun onCreateDialog(savedViewState: Bundle?): Dialog {
     App.component.inject(this)
 
     val container =
@@ -41,12 +41,12 @@ class JumpToPositionDialogFragment : DialogFragment() {
     val biggestHour = TimeUnit.MILLISECONDS.toHours(duration.toLong()).toInt()
     val durationInMinutes = TimeUnit.MILLISECONDS.toMinutes(duration.toLong()).toInt()
     if (biggestHour == 0) {
-      //sets visibility of hour related things to gone if max.hour is zero
+      // sets visibility of hour related things to gone if max.hour is zero
       container.colon.isVisible = false
       container.numberHour.isVisible = false
     }
 
-    //set maximum values
+    // set maximum values
     container.numberHour.maxValue = biggestHour
     if (biggestHour == 0) {
       container.numberMinute.maxValue = TimeUnit.MILLISECONDS.toMinutes(duration.toLong()).toInt()
@@ -54,7 +54,7 @@ class JumpToPositionDialogFragment : DialogFragment() {
       container.numberMinute.maxValue = 59
     }
 
-    //set default values
+    // set default values
     val defaultHour = TimeUnit.MILLISECONDS.toHours(position.toLong()).toInt()
     val defaultMinute = TimeUnit.MILLISECONDS.toMinutes(position.toLong()).toInt() % 60
     container.numberHour.value = defaultHour
@@ -71,17 +71,17 @@ class JumpToPositionDialogFragment : DialogFragment() {
     container.numberMinute.setOnValueChangedListener { _, oldVal, newVal ->
       var hValue = container.numberHour.value
 
-      //scrolling forward
+      // scrolling forward
       if (oldVal == 59 && newVal == 0) {
         container.numberHour.value = ++hValue
       }
-      //scrolling backward
+      // scrolling backward
       if (oldVal == 0 && newVal == 59) {
         container.numberHour.value = --hValue
       }
     }
 
-    return MaterialDialog.Builder(context!!)
+    return MaterialDialog.Builder(activity!!)
       .customView(container.containerView, true)
       .title(R.string.action_time_change)
       .onPositive { _, _ ->
@@ -97,6 +97,6 @@ class JumpToPositionDialogFragment : DialogFragment() {
 
   companion object {
 
-    val TAG: String = JumpToPositionDialogFragment::class.java.simpleName
+    val TAG: String = JumpToPositionDialogController::class.java.simpleName
   }
 }

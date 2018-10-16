@@ -111,7 +111,7 @@ class StorageDirFinder @Inject constructor(private val context: Context) {
 
     val results = ArrayList<String>()
 
-    //Method 1 for KitKat & above
+    // Method 1 for KitKat & above
     val externalDirs: Array<File?>? = context.getExternalFilesDirs(null)
     externalDirs?.forEach {
       if (it != null) {
@@ -128,7 +128,7 @@ class StorageDirFinder @Inject constructor(private val context: Context) {
       }
     }
 
-    //Method 2 for all versions
+    // Method 2 for all versions
     // better variation of: http://stackoverflow.com/a/40123073/5002496
     var output = ""
     try {
@@ -145,11 +145,11 @@ class StorageDirFinder @Inject constructor(private val context: Context) {
     }
 
     if (!output.trim { it <= ' ' }.isEmpty()) {
-      val devicePoints = output.split("\n".toRegex()).dropLastWhile(String::isEmpty).toTypedArray()
-      devicePoints.mapTo(results) { it.split(" ".toRegex()).dropLastWhile(String::isEmpty).toTypedArray()[2] }
+      output.split("\n".toRegex()).dropLastWhile(String::isEmpty)
+        .flatMapTo(results) { it.split(" ".toRegex()).dropLastWhile(String::isEmpty) }
     }
 
-    //Below few lines is to remove paths which may not be external memory card, like OTG (feel free to comment them out)
+    // Below few lines is to remove paths which may not be external memory card, like OTG (feel free to comment them out)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       var i = 0
       while (i < results.size) {
@@ -161,7 +161,9 @@ class StorageDirFinder @Inject constructor(private val context: Context) {
     } else {
       var i = 0
       while (i < results.size) {
-        if (!results[i].toLowerCase().contains("ext") && !results[i].toLowerCase().contains("sdcard")) {
+        if (!results[i].toLowerCase().contains("ext") &&
+          !results[i].toLowerCase().contains("sdcard")
+        ) {
           results.removeAt(i--)
         }
         i++
@@ -170,5 +172,4 @@ class StorageDirFinder @Inject constructor(private val context: Context) {
 
     return results
   }
-
 }

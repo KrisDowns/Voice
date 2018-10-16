@@ -14,7 +14,7 @@ import de.ph1b.audiobook.features.audio.Equalizer
 import de.ph1b.audiobook.features.audio.LoudnessDialog
 import de.ph1b.audiobook.features.bookmarks.BookmarkController
 import de.ph1b.audiobook.features.settings.SettingsController
-import de.ph1b.audiobook.features.settings.dialogs.PlaybackSpeedDialogFragment
+import de.ph1b.audiobook.features.settings.dialogs.PlaybackSpeedDialogController
 import de.ph1b.audiobook.injection.App
 import de.ph1b.audiobook.misc.MultiLineSpinnerAdapter
 import de.ph1b.audiobook.misc.clicks
@@ -37,8 +37,6 @@ import de.ph1b.audiobook.uitools.ThemeUtil
 import kotlinx.android.synthetic.main.book_play.*
 import kotlinx.coroutines.experimental.Dispatchers
 import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.IO
-import kotlinx.coroutines.experimental.android.Main
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.withContext
 import timber.log.Timber
@@ -86,7 +84,9 @@ class BookPlayController(
 
     // find closest position
     val currentChapter =
-      dataForCurrentFile.firstOrNull { book.content.positionInChapter >= it.start && book.content.positionInChapter < it.stop }
+      dataForCurrentFile.firstOrNull {
+        book.content.positionInChapter >= it.start && book.content.positionInChapter < it.stop
+      }
         ?: dataForCurrentFile.firstOrNull { book.content.positionInChapter == it.stop }
         ?: dataForCurrentFile.first()
     this.currentChapter = currentChapter
@@ -173,7 +173,7 @@ class BookPlayController(
     seekBar.setOnSeekBarChangeListener(
       object : SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(view: SeekBar?, progress: Int, p2: Boolean) {
-          //sets text to adjust while using seekBar
+          // sets text to adjust while using seekBar
           playedTime.text = formatTime(progress.toLong(), seekBar.max.toLong())
         }
 
@@ -246,9 +246,9 @@ class BookPlayController(
           true
         }
         R.id.action_time_lapse -> {
-          PlaybackSpeedDialogFragment().show(
-            fragmentManager,
-            PlaybackSpeedDialogFragment.TAG
+          PlaybackSpeedDialogController().showDialog(
+            router,
+            PlaybackSpeedDialogController.TAG
           )
           true
         }
@@ -283,7 +283,7 @@ class BookPlayController(
   }
 
   private fun launchJumpToPositionDialog() {
-    JumpToPositionDialogFragment().show(fragmentManager, JumpToPositionDialogFragment.TAG)
+    JumpToPositionDialogController().showDialog(router, JumpToPositionDialogController.TAG)
   }
 
   override fun showLeftSleepTime(ms: Int) {

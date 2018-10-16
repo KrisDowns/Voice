@@ -21,7 +21,6 @@ import de.ph1b.audiobook.injection.PrefKeys
 import de.ph1b.audiobook.misc.PendingIntentCompat
 import de.ph1b.audiobook.misc.coverFile
 import de.ph1b.audiobook.misc.dpToPxRounded
-import de.ph1b.audiobook.misc.getOnUiThread
 import de.ph1b.audiobook.persistence.pref.Pref
 import de.ph1b.audiobook.playback.PlayStateManager
 import de.ph1b.audiobook.playback.PlayerController
@@ -30,7 +29,6 @@ import de.ph1b.audiobook.uitools.ImageHelper
 import de.ph1b.audiobook.uitools.MAX_IMAGE_SIZE
 import kotlinx.coroutines.experimental.Dispatchers
 import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.IO
 import kotlinx.coroutines.experimental.launch
 import timber.log.Timber
 import java.util.UUID
@@ -134,7 +132,9 @@ class WidgetUpdater @Inject constructor(
       @Suppress("DEPRECATION")
       val displayHeight = display.height
 
-      return orientation != Configuration.ORIENTATION_LANDSCAPE && (orientation == Configuration.ORIENTATION_PORTRAIT || displayWidth == displayHeight || displayWidth < displayHeight)
+      return orientation != Configuration.ORIENTATION_LANDSCAPE &&
+          (orientation == Configuration.ORIENTATION_PORTRAIT ||
+              displayWidth == displayHeight || displayWidth < displayHeight)
     }
 
   private suspend fun initElements(remoteViews: RemoteViews, book: Book, coverSize: Int) {
@@ -189,7 +189,7 @@ class WidgetUpdater @Inject constructor(
       Picasso.get()
         .load(coverFile)
         .resize(sizeForPicasso, sizeForPicasso)
-        .getOnUiThread()
+        .get()
     } else null
 
     if (cover == null) {

@@ -68,11 +68,11 @@ object Deps {
 
   object ExoPlayer {
     const val core = "com.google.android.exoplayer:exoplayer-core:2.9.0"
-    private const val extensionVersion = "2.9.0"
+    private const val extensionVersion = "2.7.0-1"
     const val opus =
-      "com.github.PaulWoitaschek.ExoPlayer-Extensions:opus:2.7.0-1"
+      "com.github.PaulWoitaschek.ExoPlayer-Extensions:opus:$extensionVersion"
     const val flac =
-      "com.github.PaulWoitaschek.ExoPlayer-Extensions:flac:2.7.0-1"
+      "com.github.PaulWoitaschek.ExoPlayer-Extensions:flac:$extensionVersion"
   }
 
   const val moshi = "com.squareup.moshi:moshi:1.7.0"
@@ -98,4 +98,5 @@ object Deps {
   const val mockitoKotlin = "com.nhaarman:mockito-kotlin-kt1.1:1.6.0"
   const val truth = "com.google.truth:truth:0.42"
   const val robolectric = "org.robolectric:robolectric:4.0-beta-1"
+  const val ktLint = "0.29.0"
 }

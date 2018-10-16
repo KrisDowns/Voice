@@ -3,10 +3,12 @@ package de.ph1b.audiobook.features.settings
 import androidx.annotation.StringRes
 import de.ph1b.audiobook.R
 import de.ph1b.audiobook.features.BaseController
-import de.ph1b.audiobook.features.bookPlaying.SeekDialogFragment
-import de.ph1b.audiobook.features.settings.dialogs.AutoRewindDialogFragment
-import de.ph1b.audiobook.features.settings.dialogs.SupportDialogFragment
-import de.ph1b.audiobook.features.settings.dialogs.ThemePickerDialogFragment
+import de.ph1b.audiobook.features.bookOverview.list.BookComparator
+import de.ph1b.audiobook.features.bookPlaying.SeekDialogController
+import de.ph1b.audiobook.features.settings.dialogs.AutoRewindDialogController
+import de.ph1b.audiobook.features.settings.dialogs.SortingModeDialogController
+import de.ph1b.audiobook.features.settings.dialogs.SupportDialogController
+import de.ph1b.audiobook.features.settings.dialogs.ThemePickerDialogController
 import de.ph1b.audiobook.injection.App
 import de.ph1b.audiobook.injection.PrefKeys
 import de.ph1b.audiobook.misc.tint
@@ -23,6 +25,8 @@ class SettingsController : BaseController() {
 
   @field:[Inject Named(PrefKeys.THEME)]
   lateinit var themePref: Pref<ThemeUtil.Theme>
+  @field:[Inject Named(PrefKeys.SORTING_MODE)]
+  lateinit var sortingPref: Pref<BookComparator>
   @field:[Inject Named(PrefKeys.RESUME_ON_REPLUG)]
   lateinit var resumeOnReplugPref: Pref<Boolean>
   @field:[Inject Named(PrefKeys.RESUME_AFTER_CALL)]
@@ -46,10 +50,21 @@ class SettingsController : BaseController() {
       doubleSettingView = theme,
       titleRes = R.string.pref_theme_title
     ) {
-      ThemePickerDialogFragment().show(fragmentManager, ThemePickerDialogFragment.TAG)
+      ThemePickerDialogController().showDialog(router, ThemePickerDialogController.TAG)
     }
     themePref.stream
       .subscribe { theme.setDescription(it.nameId) }
+      .disposeOnDestroyView()
+
+    // sorting mode
+    setupTextSetting(
+      doubleSettingView = sortingMode,
+      titleRes = R.string.pref_sort_title
+    ) {
+      SortingModeDialogController().showDialog(router)
+    }
+    sortingPref.stream
+      .subscribe { sortingMode.setDescription(it.nameId) }
       .disposeOnDestroyView()
 
     // resume on playback
@@ -73,7 +88,7 @@ class SettingsController : BaseController() {
       doubleSettingView = skipAmount,
       titleRes = R.string.pref_seek_time
     ) {
-      SeekDialogFragment().show(fragmentManager, SeekDialogFragment.TAG)
+      SeekDialogController().showDialog(router, SeekDialogController.TAG)
     }
     seekTimePref.stream
       .map { resources!!.getQuantityString(R.plurals.seconds, it, it) }
@@ -85,7 +100,7 @@ class SettingsController : BaseController() {
       doubleSettingView = autoRewind,
       titleRes = R.string.pref_auto_rewind_title
     ) {
-      AutoRewindDialogFragment().show(fragmentManager, AutoRewindDialogFragment.TAG)
+      AutoRewindDialogController().showDialog(router, AutoRewindDialogController.TAG)
     }
     autoRewindAmountPref.stream
       .map { resources!!.getQuantityString(R.plurals.seconds, it, it) }
@@ -98,7 +113,7 @@ class SettingsController : BaseController() {
     toolbar.tint()
     toolbar.setOnMenuItemClickListener {
       if (it.itemId == R.id.action_contribute) {
-        SupportDialogFragment().show(fragmentManager, SupportDialogFragment.TAG)
+        SupportDialogController().showDialog(router, SupportDialogController.TAG)
         true
       } else
         false

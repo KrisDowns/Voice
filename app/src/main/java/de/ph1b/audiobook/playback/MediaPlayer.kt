@@ -145,18 +145,19 @@ constructor(
   }
 
   fun init(content: BookContent) {
-    val shouldInitialize = player.playbackState == Player.STATE_IDLE
-        || !alreadyInitializedChapters(content)
-    _bookContent.onNext(content)
-    if (shouldInitialize) {
-      Timber.i("init")
-      player.playWhenReady = false
-      player.prepare(dataSourceConverter.toMediaSource(content))
-      player.seekTo(content.currentChapterIndex, content.positionInChapter.toLong())
-      player.setPlaybackParameters(content.playbackSpeed, content.skipSilence)
-      loudnessGain.gainmB = content.loudnessGain
-      state = PlayerState.PAUSED
+    val shouldInitialize = player.playbackState == Player.STATE_IDLE ||
+        !alreadyInitializedChapters(content)
+    if (!shouldInitialize) {
+      return
     }
+    Timber.i("init")
+    _bookContent.onNext(content)
+    player.playWhenReady = false
+    player.prepare(dataSourceConverter.toMediaSource(content))
+    player.seekTo(content.currentChapterIndex, content.positionInChapter.toLong())
+    player.setPlaybackParameters(content.playbackSpeed, content.skipSilence)
+    loudnessGain.gainmB = content.loudnessGain
+    state = PlayerState.PAUSED
   }
 
   private fun alreadyInitializedChapters(content: BookContent): Boolean {
@@ -178,6 +179,12 @@ constructor(
   fun play() {
     Timber.v("play called in state $state")
     prepareIfIdle()
+    bookContent?.let {
+      val withChangedPlayedAtTime = it.updateSettings {
+        copy(lastPlayedAtMillis = System.currentTimeMillis())
+      }
+      _bookContent.onNext(withChangedPlayedAtTime)
+    }
     bookContent?.let {
       if (state == PlayerState.ENDED) {
         Timber.i("play in state ended. Back to the beginning")
@@ -299,7 +306,8 @@ constructor(
               // now try to find the current chapter mark and make sure we don't auto-rewind
               // to a previous mark
               val chapterMarks = it.currentChapter.marks
-              chapterMarks.forEachIndexed(reversed = true) findStartOfMark@{ index, startOfMark, _ ->
+              chapterMarks.forEachIndexed(reversed = true)
+              findStartOfMark@{ index, startOfMark, _ ->
                 if (startOfMark <= currentPosition) {
                   val next = chapterMarks.keyAtOrNull(index + 1)
                   if (next == null || next > currentPosition) {

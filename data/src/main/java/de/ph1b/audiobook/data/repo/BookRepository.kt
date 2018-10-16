@@ -8,8 +8,6 @@ import de.ph1b.audiobook.data.repo.internals.BookStorage
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.IO
-import kotlinx.coroutines.experimental.android.Main
 import kotlinx.coroutines.experimental.withContext
 import timber.log.Timber
 import java.io.File
@@ -19,7 +17,6 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 @Singleton
 class BookRepository
 @Inject constructor(private val storage: BookStorage) {
@@ -28,7 +25,6 @@ class BookRepository
   private val active: MutableList<Book> by lazy {
     val activeBooks = allBooks.filter { it.content.settings.active }
     Collections.synchronizedList(activeBooks)
-      .also { it.sort() }
   }
   private val orphaned: MutableList<Book> by lazy {
     val orphanedBooks = allBooks.filter { it.content.settings.active }
@@ -36,9 +32,7 @@ class BookRepository
   }
 
   private val activeBooksSubject: BehaviorSubject<List<Book>> by lazy {
-    BehaviorSubject.createDefault<List<Book>>(
-      active
-    )
+    BehaviorSubject.createDefault<List<Book>>(active)
   }
 
   fun booksStream(): Observable<List<Book>> = activeBooksSubject
@@ -49,20 +43,15 @@ class BookRepository
     }
   }
 
-  private suspend fun sortBooksAndNotifySubject() {
-    active.sort()
-    withContext(Dispatchers.Main) {
-      activeBooksSubject.onNext(active.toList())
-    }
-  }
-
   suspend fun addBook(book: Book) {
     withContext(Dispatchers.IO) {
       Timber.v("addBook=${book.name}")
 
       storage.addOrUpdate(book)
       active.add(book)
-      sortBooksAndNotifySubject()
+      withContext(Dispatchers.Main) {
+        activeBooksSubject.onNext(active.toList())
+      }
     }
   }
 
@@ -84,7 +73,7 @@ class BookRepository
         active[index] = book
         storage.addOrUpdate(book)
         withContext(Dispatchers.Main) {
-          sortBooksAndNotifySubject()
+          activeBooksSubject.onNext(active.toList())
         }
       } else Timber.e("update failed as there was no book")
     }
@@ -112,7 +101,9 @@ class BookRepository
       active.removeAll { idsToDelete.contains(it.id) }
       orphaned.addAll(toDelete)
       toDelete.forEach { storage.hideBook(it.id) }
-      sortBooksAndNotifySubject()
+      withContext(Dispatchers.Main) {
+        activeBooksSubject.onNext(active.toList())
+      }
     }
   }
 
@@ -123,7 +114,9 @@ class BookRepository
       orphaned.removeAll { it.id == book.id }
       active.add(book)
       storage.revealBook(book.id)
-      sortBooksAndNotifySubject()
+      withContext(Dispatchers.Main) {
+        activeBooksSubject.onNext(active.toList())
+      }
     }
   }
 
